@@ -11,6 +11,7 @@ import frc.robot.subsystems.Piviot_MM;
 public class Piviot_To_Setpoint extends CommandBase {
   private final Piviot_MM m_Piviot;
   private double m_setpoint;
+ 
   /** Creates a new Piviot_To_Setpoint. */
   public Piviot_To_Setpoint(double deg, Piviot_MM subsystem) {
     m_setpoint = deg;
@@ -21,7 +22,9 @@ public class Piviot_To_Setpoint extends CommandBase {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
@@ -36,22 +39,10 @@ public class Piviot_To_Setpoint extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return isPivotMotionMagicDone();
+    return m_Piviot.my_get_PositionLock(m_setpoint);
   }
 
-  private boolean isPivotMotionMagicDone() {
-    double pivotSensorAngle = m_Piviot.my_getDeg();
-    double error = pivotSensorAngle - m_setpoint;
-    SmartDashboard.putNumber("Pivot Target  [deg]",m_setpoint);
-    double percentErr = Math.abs(error)/Math.abs(m_setpoint);
-    SmartDashboard.putNumber("Pivot Percent Error", percentErr);
-    // double timePassed = Timer.getFPGATimestamp() - pivotStartTime;
-    if (percentErr < 1){
-      return true;
-    }else{
-      return false;
-    }
-  }
+
  
 
 }
