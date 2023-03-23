@@ -5,16 +5,16 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.Piviot_MM;
+import frc.robot.subsystems.Pivot_MM;
 
 public class Pivot_Percent extends CommandBase {
-  private final Piviot_MM m_Piviot;
+  private final Pivot_MM m_Pivot;
   private double m_setpoint;
   /** Creates a new Pivot_Percent. */
-  public Pivot_Percent(double setpoint, Piviot_MM subsystem) {
+  public Pivot_Percent(double setpoint, Pivot_MM subsystem) {
     m_setpoint = setpoint;
-    m_Piviot = subsystem;
-    addRequirements(m_Piviot);
+    m_Pivot = subsystem;
+    addRequirements(m_Pivot);
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
@@ -25,13 +25,13 @@ public class Pivot_Percent extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_Piviot.my_PercentOutput_Run(m_setpoint);
+    m_Pivot.my_PercentOutput_Run(m_setpoint);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_Piviot.my_PercentOutput_Run(0);
+    m_Pivot.my_PercentOutput_Run(0);
   }
 
   // Returns true when the command should end.

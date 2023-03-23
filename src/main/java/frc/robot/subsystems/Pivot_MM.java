@@ -14,14 +14,14 @@ import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 
-public class Piviot_MM extends SubsystemBase {
+public class Pivot_MM extends SubsystemBase {
 	WPI_TalonFX _talon = new WPI_TalonFX(12, "rio"); // Rename "rio" to match the CANivore device name if using a
 														// CANivore
 	/* Used to build string throughout loop */
 	StringBuilder _sb = new StringBuilder();
 
-	/** Creates a new Piviot_MM. */
-	public Piviot_MM() {
+	/** Creates a new Pivot_MM. */
+	public Pivot_MM() {
 		/* Factory default hardware to prevent unexpected behavior */
 		_talon.configFactoryDefault();
 

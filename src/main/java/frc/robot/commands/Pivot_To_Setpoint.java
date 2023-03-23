@@ -6,17 +6,17 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.Piviot_MM;
+import frc.robot.subsystems.Pivot_MM;
 
-public class Piviot_To_Setpoint extends CommandBase {
-  private final Piviot_MM m_Piviot;
+public class Pivot_To_Setpoint extends CommandBase {
+  private final Pivot_MM m_Pivot;
   private double m_setpoint;
  
-  /** Creates a new Piviot_To_Setpoint. */
-  public Piviot_To_Setpoint(double deg, Piviot_MM subsystem) {
+  /** Creates a new Pivot_To_Setpoint. */
+  public Pivot_To_Setpoint(double deg, Pivot_MM subsystem) {
     m_setpoint = deg;
-    m_Piviot = subsystem;
-    addRequirements(m_Piviot);
+    m_Pivot = subsystem;
+    addRequirements(m_Pivot);
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
@@ -29,7 +29,7 @@ public class Piviot_To_Setpoint extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_Piviot.my_motionMagic_Run(m_setpoint);
+    m_Pivot.my_motionMagic_Run(m_setpoint);
   }
 
   // Called once the command ends or is interrupted.
@@ -39,7 +39,7 @@ public class Piviot_To_Setpoint extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return m_Piviot.my_get_PositionLock(m_setpoint);
+    return m_Pivot.my_get_PositionLock(m_setpoint);
   }
 
 
