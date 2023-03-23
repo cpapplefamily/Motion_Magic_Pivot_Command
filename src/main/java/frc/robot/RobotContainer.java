@@ -7,13 +7,17 @@ package frc.robot;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.Piviot_To_Setpoint;
+import frc.robot.commands.Pivot_Percent;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Piviot_MM;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -28,13 +32,18 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final Piviot_MM m_piviot_MM = new Piviot_MM();
-
+  
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
-      new CommandXboxController(0);
+  new CommandXboxController(0);
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    SmartDashboard.putData(m_piviot_MM);
     // Configure the trigger bindings
+    SmartDashboard.putData("Arm to 90", new Piviot_To_Setpoint(90, m_piviot_MM));
+    SmartDashboard.putData("Arm to 0", new Piviot_To_Setpoint(0, m_piviot_MM));
+    SmartDashboard.putData("Arm percent", new Pivot_Percent(.2, m_piviot_MM));
+    SmartDashboard.putData("Arm Reset", new InstantCommand(()-> m_piviot_MM.my_resetEncoder()));
     configureBindings();
   }
 
@@ -52,8 +61,8 @@ public class RobotContainer {
     new Trigger(m_exampleSubsystem::exampleCondition)
         .onTrue(new ExampleCommand(m_exampleSubsystem));
 
-        m_driverController.a().onTrue(new Piviot_To_Setpoint(90, m_piviot_MM));
-        m_driverController.b().onTrue(new Piviot_To_Setpoint(0, m_piviot_MM));
+        m_driverController.b().onTrue(new Piviot_To_Setpoint(90, m_piviot_MM));
+        m_driverController.a().onTrue(new Piviot_To_Setpoint(1, m_piviot_MM));
         m_driverController.start().onTrue(new InstantCommand(()-> m_piviot_MM.my_resetEncoder()));
         
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
@@ -69,5 +78,18 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
     return Autos.exampleAuto(m_exampleSubsystem);
+  }
+
+  /**
+   * This will remove any active Closed loop control on the Pivot_MM subsystem
+   */
+  public Command my_Disable_Pivot_MM(){
+    return new InstantCommand(()-> m_piviot_MM.my_PercentOutput_Run(0),m_piviot_MM).ignoringDisable(true);
+  }
+
+  public Command my_Disable_All_MotionMagic(){
+    return Commands.parallel(new InstantCommand(()-> m_piviot_MM.my_PercentOutput_Run(0),m_piviot_MM).ignoringDisable(true),
+                              new WaitCommand(0) // Add each Subsystem here
+                              );
   }
 }
