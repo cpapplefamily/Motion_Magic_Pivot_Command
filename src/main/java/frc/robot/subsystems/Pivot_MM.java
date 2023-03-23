@@ -18,11 +18,13 @@ public class Pivot_MM extends SubsystemBase {
 	
 	private static double GEAR_RATIO = 80;
 	private static double MOTOR_COUNTS_PER_REV = 2048;
+	private double ForwardSoftLimitThreshold = deg_To_Raw_Sensor_Counts(75);
+	private double ReverseSoftLimitThreshold = deg_To_Raw_Sensor_Counts(0);
 	
 	WPI_TalonFX _talon = new WPI_TalonFX(12, "rio"); // Rename "rio" to match the CANivore device name if using a
 													// CANivore
 
-													
+
 	/* Used to build string throughout loop */
 	StringBuilder _sb = new StringBuilder();
 
@@ -83,6 +85,11 @@ public class Pivot_MM extends SubsystemBase {
 		/* Zero the sensor once on robot boot up */
 		_talon.setSelectedSensorPosition(0, Constants.kPIDLoopIdx, Constants.kTimeoutMs);
 
+		_talon.configForwardSoftLimitThreshold(ForwardSoftLimitThreshold, Constants.kTimeoutMs);
+		_talon.configForwardSoftLimitEnable(true, 0);
+		
+		_talon.configReverseSoftLimitThreshold(ReverseSoftLimitThreshold, Constants.kTimeoutMs);
+		_talon.configReverseSoftLimitEnable(true, 0);
 		// _talon.configClearPositionOnLimitR(true, 0);
 	}
 
@@ -119,7 +126,7 @@ public class Pivot_MM extends SubsystemBase {
 		m_targetPos = deg;
 		
 		/* 2048 ticks/rev * 10 Rotations in either direction */
-		double targetPos = deg / 360 * MOTOR_COUNTS_PER_REV * GEAR_RATIO;
+		double targetPos = deg_To_Raw_Sensor_Counts(deg);// / 360 * MOTOR_COUNTS_PER_REV * GEAR_RATIO;
 		_talon.set(TalonFXControlMode.MotionMagic, targetPos);
 
 	}
@@ -138,7 +145,7 @@ public class Pivot_MM extends SubsystemBase {
 	}
 
 	public double my_getDeg() {
-		return _talon.getSelectedSensorPosition() * 360 / (GEAR_RATIO * MOTOR_COUNTS_PER_REV);
+		return raw_Sensor_Counts_To_Deg(_talon.getSelectedSensorPosition());// * 360 / (GEAR_RATIO * MOTOR_COUNTS_PER_REV);
 	}
 
 	/**
@@ -156,5 +163,14 @@ public class Pivot_MM extends SubsystemBase {
 		} else {
 			return false;
 		}
+	}
+
+	private double raw_Sensor_Counts_To_Deg(double counts){
+		return counts * 360 / (GEAR_RATIO * MOTOR_COUNTS_PER_REV);
+
+	}
+
+	private double deg_To_Raw_Sensor_Counts(double deg){
+		return deg / 360 * MOTOR_COUNTS_PER_REV * GEAR_RATIO;
 	}
 }
