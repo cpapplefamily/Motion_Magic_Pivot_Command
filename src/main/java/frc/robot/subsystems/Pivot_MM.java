@@ -15,8 +15,14 @@ import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 
 public class Pivot_MM extends SubsystemBase {
+	
+	private static double GEAR_RATIO = 80;
+	private static double MOTOR_COUNTS_PER_REV = 2048;
+	
 	WPI_TalonFX _talon = new WPI_TalonFX(12, "rio"); // Rename "rio" to match the CANivore device name if using a
-														// CANivore
+													// CANivore
+
+													
 	/* Used to build string throughout loop */
 	StringBuilder _sb = new StringBuilder();
 
@@ -111,9 +117,9 @@ public class Pivot_MM extends SubsystemBase {
 	public void my_motionMagic_Run(double deg) {
 		/* Motion Magic */
 		m_targetPos = deg;
-		double gearRatio = 80;
+		
 		/* 2048 ticks/rev * 10 Rotations in either direction */
-		double targetPos = deg / 360 * 2048 * gearRatio;
+		double targetPos = deg / 360 * MOTOR_COUNTS_PER_REV * GEAR_RATIO;
 		_talon.set(TalonFXControlMode.MotionMagic, targetPos);
 
 	}
@@ -132,13 +138,13 @@ public class Pivot_MM extends SubsystemBase {
 	}
 
 	public double my_getDeg() {
-		return _talon.getSelectedSensorPosition() * 360 / (80 * 2048);
+		return _talon.getSelectedSensorPosition() * 360 / (GEAR_RATIO * MOTOR_COUNTS_PER_REV);
 	}
 
 	/**
 	 * Test if in position
 	 * 
-	 * @param setpoint
+	 * @param setpoint // in deg
 	 * @return
 	 */
 	public boolean my_get_PositionLock(double setpoint) {
