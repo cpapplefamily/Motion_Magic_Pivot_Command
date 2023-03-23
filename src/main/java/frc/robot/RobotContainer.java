@@ -61,7 +61,15 @@ public class RobotContainer {
     new Trigger(m_exampleSubsystem::exampleCondition)
         .onTrue(new ExampleCommand(m_exampleSubsystem));
 
-        m_driverController.b().onTrue(new Pivot_To_Setpoint(90, m_pivot_MM));
+        //These do not hard OT the motor but set the current position equal to the soft stops
+        //Option 1 monitor input dirctly
+        new Trigger(m_pivot_MM::my_Forward_Limit).onTrue(new InstantCommand(()-> m_pivot_MM.my_SetEncoder()).ignoringDisable(true));
+        //Option 2 use a hardware counter *needs extra code to reset
+        new Trigger(m_pivot_MM::my_Revese_Limit_Counter).onTrue(new InstantCommand(()-> m_pivot_MM.my_resetEncoder()).ignoringDisable(true));
+
+        //Any time a Forward command is iniated reset the reverse counter
+        m_driverController.b().onTrue(Commands.parallel(new Pivot_To_Setpoint(90, m_pivot_MM),
+                                                        new InstantCommand(()-> m_pivot_MM.my_Reset_RevCounter())));
         m_driverController.a().onTrue(new Pivot_To_Setpoint(1, m_pivot_MM));
         m_driverController.start().onTrue(new InstantCommand(()-> m_pivot_MM.my_resetEncoder()));
         

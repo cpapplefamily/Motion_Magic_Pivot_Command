@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Counter;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -15,15 +17,18 @@ import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 
 public class Pivot_MM extends SubsystemBase {
-	
+
 	private static double GEAR_RATIO = 80;
 	private static double MOTOR_COUNTS_PER_REV = 2048;
 	private double ForwardSoftLimitThreshold = deg_To_Raw_Sensor_Counts(75);
 	private double ReverseSoftLimitThreshold = deg_To_Raw_Sensor_Counts(0);
-	
-	WPI_TalonFX _talon = new WPI_TalonFX(12, "rio"); // Rename "rio" to match the CANivore device name if using a
-													// CANivore
 
+	WPI_TalonFX _talon = new WPI_TalonFX(12, "rio"); // Rename "rio" to match the CANivore device name if using a
+														// CANivore
+
+	private DigitalInput ForwardLimitSwitch = new DigitalInput(9);
+	private Counter Rcounter = new Counter(8);
+	private Counter Fcounter = new Counter(ForwardLimitSwitch);
 
 	/* Used to build string throughout loop */
 	StringBuilder _sb = new StringBuilder();
@@ -87,7 +92,7 @@ public class Pivot_MM extends SubsystemBase {
 
 		_talon.configForwardSoftLimitThreshold(ForwardSoftLimitThreshold, Constants.kTimeoutMs);
 		_talon.configForwardSoftLimitEnable(true, 0);
-		
+
 		_talon.configReverseSoftLimitThreshold(ReverseSoftLimitThreshold, Constants.kTimeoutMs);
 		_talon.configReverseSoftLimitEnable(true, 0);
 		// _talon.configClearPositionOnLimitR(true, 0);
@@ -95,6 +100,8 @@ public class Pivot_MM extends SubsystemBase {
 
 	@Override
 	public void periodic() {
+		SmartDashboard.putNumber("Rcounter", Rcounter.get());
+		SmartDashboard.putNumber("Fcounter", Fcounter.get());
 		SmartDashboard.putNumber("Current Deg", my_getDeg());
 		double motorOutput = _talon.getMotorOutputPercent();
 
@@ -124,7 +131,7 @@ public class Pivot_MM extends SubsystemBase {
 	public void my_motionMagic_Run(double deg) {
 		/* Motion Magic */
 		m_targetPos = deg;
-		
+
 		/* 2048 ticks/rev * 10 Rotations in either direction */
 		double targetPos = deg_To_Raw_Sensor_Counts(deg);// / 360 * MOTOR_COUNTS_PER_REV * GEAR_RATIO;
 		_talon.set(TalonFXControlMode.MotionMagic, targetPos);
@@ -143,9 +150,13 @@ public class Pivot_MM extends SubsystemBase {
 	public void my_resetEncoder() {
 		_talon.setSelectedSensorPosition(0, Constants.kPIDLoopIdx, Constants.kTimeoutMs);
 	}
+	public void my_SetEncoder() {
+		_talon.setSelectedSensorPosition(ForwardSoftLimitThreshold, Constants.kPIDLoopIdx, Constants.kTimeoutMs);
+	}
 
 	public double my_getDeg() {
-		return raw_Sensor_Counts_To_Deg(_talon.getSelectedSensorPosition());// * 360 / (GEAR_RATIO * MOTOR_COUNTS_PER_REV);
+		return raw_Sensor_Counts_To_Deg(_talon.getSelectedSensorPosition());// * 360 / (GEAR_RATIO *
+																			// MOTOR_COUNTS_PER_REV);
 	}
 
 	/**
@@ -165,12 +176,43 @@ public class Pivot_MM extends SubsystemBase {
 		}
 	}
 
-	private double raw_Sensor_Counts_To_Deg(double counts){
+	private double raw_Sensor_Counts_To_Deg(double counts) {
 		return counts * 360 / (GEAR_RATIO * MOTOR_COUNTS_PER_REV);
 
 	}
 
-	private double deg_To_Raw_Sensor_Counts(double deg){
+	private double deg_To_Raw_Sensor_Counts(double deg) {
 		return deg / 360 * MOTOR_COUNTS_PER_REV * GEAR_RATIO;
 	}
+
+	/**
+	 * You could monitor the limit Swith but using the counter might be better
+	 * only you will need to program a reset when commanded to operator in a safe
+	 * direction
+	 * 
+	 * @return
+	 */
+	public boolean my_Forward_Limit() {
+		// false = switch Closed
+		return !ForwardLimitSwitch.get();
+	}
+
+	/**
+	 * 
+	 * 
+	 * @return
+	 */
+	public boolean my_Revese_Limit_Counter() {
+		if (Rcounter.get() != 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public void my_Reset_RevCounter() {
+		Rcounter.reset();
+	}
+
+
 }
